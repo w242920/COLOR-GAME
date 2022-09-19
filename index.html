@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>色弱遊戲</title>
+    <link rel="stylesheet" href="./0913-HW-colorgame.css">
+</head>
+<body>
+    <div class="container">
+        <div class="begin_page">
+            <button class="game_start">Game Start</button>
+            <h1>COLOR GAME</h1>
+            <p class="game_rule">Hit the ONLY box of lighter color in 30 Sec.</p>
+            <p class="game_rule">You may get hint from pressing HINT button.</p>
+            <p>In the mean time, score would be minus one point.</p>
+        </div>
+
+        <div class="game_page">
+            <div class="gp_function">
+                <div class="gp_time">TIME：<span class="time_left"></span></span></div>
+                <div class="gp_score">SCORE：<span class="score"></span></div>
+                <button class="hint">HINT</button>
+                <button class="timestop">TIME STOP</button>
+            </div> 
+            <div class="boxwindow">
+                <!-- <div class="box" style="width:50%; height:50%; background-color:#000;"></div> -->
+            </div>
+        </div>
+
+        <div class="end_page">
+            <div class="ep_result">Score：<span class="result"></span></div>
+            <div class="comment"></div>
+            <button class="restart">RESTART</button>
+        </div>
+    </div>
+
+    <script>
+        const BEGIN_PAGE = document.querySelector('.begin_page')
+        const START_BUTTON = document.querySelector('.game_start')
+        const GAME_PAGE = document.querySelector('.game_page')
+        const BOXWINDOW = document.querySelector('.boxwindow')
+        const timeLeft = document.querySelector('.time_left')
+        const score = document.querySelector('.score')
+        const stopButton = document.querySelector('.timestop')
+        const resultPage = document.querySelector('.end_page')
+        const result = document.querySelector('.result')
+        const comment = document.querySelector('.comment')
+        const restartButton = document.querySelector('.restart')
+        const hint = document.querySelector('.hint')
+        
+        
+        
+        var level
+        var timer
+        var ans
+        var difficulty
+            
+            GAME_PAGE.classList.add('off')
+            resultPage.classList.add('off')
+
+            //按下開始按鈕，進入遊戲畫面
+            START_BUTTON.onclick = function(){
+                
+            //清空上一場題目
+            BOXWINDOW.innerHTML = ''
+
+            //分數時間難度起始化
+            timer = 30
+            timeLeft.innerHTML = timer
+            score.innerHTML = 0
+            difficulty = 0.6
+            level = 2
+
+            //開啟遊戲畫面
+            GAME_PAGE.classList.remove('off')
+
+            //生成方塊、答案
+            ans = Math.floor((Math.random() * (level * level)))
+
+            //亂數決定新題目的顏色
+            r = Math.floor(Math.random()*200)
+            g = Math.floor(Math.random()*200)
+            b = Math.floor(Math.random()*200)
+            for(let index = 0; index < level * level; index++){
+                if(index == ans){
+                BOXWINDOW.innerHTML += `<div class="answer_box" onclick="checkAnswer(true)" style="width:${100 / level}% ;height:${100 / level}%;background-color: rgb(${r}, ${g}, ${b});opacity: ${difficulty};"></div>`
+                }else{
+                BOXWINDOW.innerHTML += `<div class="box" onclick="checkAnswer(false)" style="width:${100 / level}% ;height:${100 / level}%;background-color: rgb(${r}, ${g}, ${b});"></div>`
+                }
+            }
+
+            //關閉開始畫面
+                BEGIN_PAGE.classList.add('off')
+
+            //開始計時
+            var timer1 = setInterval(function(){
+                timer = timer - 1;
+                timeLeft.innerHTML = timer
+                if (timer == 0){ //檢查倒數是否到了0秒
+                    clearInterval(timer1) //停止倒數
+
+                    //將遊玩區塊隱藏
+                    GAME_PAGE.classList.add('off')
+
+                    //結果視窗的顯示與輸出
+                    resultPage.classList.remove('off')
+                    result.innerHTML = score.innerHTML
+                    if (score.innerHTML > 28){
+                        comment.innerHTML = 'SUCH A KILLER, MAN!' 
+                    }else{
+                        comment.innerHTML = 'COME ON, MAN!' 
+                    }
+                }
+            },1000);
+        }
+
+        //暫停計時
+        stopButton.onclick = function(){
+                alert('時間暫停~')
+            }
+
+        //答案提示
+        hint.onclick = function(){
+        // 使用提示功能的扣分
+        score.innerHTML = score.innerHTML - 1
+        // 選取到正確答案的框框
+        const ansbox = document.querySelector('.answer_box')
+        ansbox.classList.add('hint-line')
+        // 將正確答案的框框加上css屬性變得更顯眼
+        // ansbox.classList.add('act')
+        }
+
+        // 重新開始按鈕
+        restartButton.onclick = function(){
+        //關閉結算畫面
+        resultPage.classList.add('off')
+        //將起始畫面打開
+        BEGIN_PAGE.classList.remove('off')
+
+
+        }
+
+        // 檢查答案用的function, 原理是傳過來的參數(guess) 去判斷是否猜對
+        function checkAnswer(guess){
+        // var level
+        if (guess){ // 因為guess是布林值, 所以可以直接放入if當條件即可
+
+        //答對+1分
+        score.innerHTML = parseInt(score.innerHTML) + 1
+                
+        //清空上一場題目
+        BOXWINDOW.innerHTML = ''
+
+        // 根據目前分數判斷下一題難度
+        //邏輯:當你分數及格, 等級又不到3的時候, 才會升級為3
+        if (score.innerHTML > 5 && level < 3){ 
+            level = 3
+        }
+        //邏輯:當你分數及格, 等級又不到4的時候, 才會升級為4
+        if(score.innerHTML > 10 && level < 4){
+            level = 4
+        }
+        //邏輯:當你分數及格, 等級又不到5的時候, 才會升級為5
+        if(score.innerHTML > 15 && level < 5){
+            level = 5
+            difficulty = 0.7
+        }
+        //邏輯:當你分數及格, 等級又不到6的時候, 才會升級為6
+        if(score.innerHTML > 20 && level < 6){
+            level = 6
+        }
+        //邏輯:當你分數及格, 等級又不到7的時候, 才會升級為7
+        if(score.innerHTML > 25 && level < 7){
+            level = 7
+            difficulty = 0.8
+        }
+        // 重新亂數產生答案
+        ans = Math.floor(Math.random() * (level * level))
+        // 亂數決定新題目的顏色
+        r = Math.floor(Math.random()*200)
+        g = Math.floor(Math.random()*200)
+        b = Math.floor(Math.random()*200)
+        for (let index = 0; index < level * level; index++) {
+        if (index == ans){
+            BOXWINDOW.innerHTML += `<div onclick="checkAnswer(true)" class="answer_box" style="width:${100 / level}% ;height:${100 / level}%;background-color: rgb(${r}, ${g}, ${b});opacity: ${difficulty};"></div>`
+        }else{
+            BOXWINDOW.innerHTML += `<div onclick="checkAnswer(false)" class="box" style="width:${100 / level}% ;height:${100 / level}%;background-color: rgb(${r}, ${g}, ${b});"></div>`
+            }
+        }
+
+        }else{
+        //答錯扣分
+        score.innerHTML = score.innerHTML - 1
+            }
+        }
+
+    </script>
+</body>
+</html>
